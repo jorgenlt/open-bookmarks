@@ -1,3 +1,5 @@
+import { bold, green } from "yoctocolors";
+
 const folderChildren = (node) =>
   Array.isArray(node.children)
     ? node.children.filter(
@@ -18,7 +20,7 @@ const printFoldersTree = (node, prefix = "") => {
 };
 
 const listFolders = (bookmarksPath, root) => {
-  console.log(`Bookmark folders (${bookmarksPath}):`);
+  console.log(`${bold(green("Bookmark folders"))} (${bookmarksPath}):\n`);
   if (root && typeof root === "object") {
     if (root.roots && typeof root.roots === "object") {
       for (const key of Object.keys(root.roots)) {
@@ -30,7 +32,7 @@ const listFolders = (bookmarksPath, root) => {
       }
     } else {
       const label = root.name || "Bookmarks";
-      console.log(label);
+      console.log(bold(green(label)));
       printFoldersTree(root, "");
     }
   }

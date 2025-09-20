@@ -1,4 +1,4 @@
-import { bold, green, greenBright } from "yoctocolors";
+import { bold, green } from "yoctocolors";
 
 const listBookmarks = (uniqueUrls, folderName, bookmarksPath) => {
   console.log(

@@ -17,6 +17,7 @@ if (raw.length === 0) showHelpAndExit();
 let browserOption = "vivaldi"; // default
 let privateMode = false;
 let listMode = false;
+let listAllMode = false;
 let listFoldersMode = false;
 let flatFoldersMode = false;
 const scriptName = path.basename(process.argv[1] || "node index.js");
@@ -51,6 +52,9 @@ for (const a of raw) {
       break;
     case "--list":
       listMode = true;
+      break;
+    case "--list-all":
+      listAllMode = true;
       break;
     case "--list-folders":
       listFoldersMode = true;
@@ -130,6 +134,27 @@ if (flatFoldersMode) {
   }
   folders = Array.from(new Set(folders)).sort();
   listFlatFolders(bookmarksPath, folders);
+  process.exit(0);
+}
+
+if (listAllMode) {
+  let allUrls = [];
+  if (root && typeof root === "object") {
+    if (root.roots && typeof root.roots === "object") {
+      for (const key of Object.keys(root.roots)) {
+        collectAllUrls(root.roots[key], allUrls);
+      }
+    } else {
+      collectAllUrls(root, allUrls);
+    }
+  }
+  const uniqueAll = Array.from(new Set(allUrls));
+  if (uniqueAll.length === 0) {
+    console.error(`No bookmarks found in file: ${bookmarksPath}.`);
+    process.exit(6);
+  }
+  // reuse listBookmarks for consistent output format
+  listBookmarks(uniqueAll, "ALL", bookmarksPath);
   process.exit(0);
 }
 
