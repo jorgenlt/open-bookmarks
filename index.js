@@ -7,6 +7,8 @@ import os from "os";
 import { spawn } from "child_process";
 import showHelpAndExit from "./common/showHelpAndExit.js";
 import listBookmarks from "./common/listBookmarks.js";
+import listFlatFolders from "./common/listFlatFolders.js";
+import listFolders from "./common/listFolders.js";
 
 // --------- Parse flags & positional args ---------
 const raw = process.argv.slice(2);
@@ -15,6 +17,8 @@ if (raw.length === 0) showHelpAndExit();
 let browserOption = "vivaldi"; // default
 let privateMode = false;
 let listMode = false;
+let listFoldersMode = false;
+let flatFoldersMode = false;
 const scriptName = path.basename(process.argv[1] || "node index.js");
 const positionals = [];
 
@@ -25,9 +29,6 @@ for (const a of raw) {
       showHelpAndExit(scriptName);
       break;
     case "--vivaldi-private":
-      browserOption = "vivaldi";
-      privateMode = true;
-      break;
     case "--private":
       browserOption = "vivaldi";
       privateMode = true;
@@ -51,6 +52,12 @@ for (const a of raw) {
     case "--list":
       listMode = true;
       break;
+    case "--list-folders":
+      listFoldersMode = true;
+      break;
+    case "--list-folders-flat":
+      flatFoldersMode = true;
+      break;
     default:
       if (a.startsWith("-")) {
         console.error(`Unknown option: ${a}`);
@@ -67,11 +74,6 @@ const bookmarksPath =
   positionals[1] ||
   path.join(os.homedir(), ".config", "vivaldi", "Default", "Bookmarks");
 
-if (!folderName) {
-  console.error("Missing bookmark folder name.");
-  showHelpAndExit(2);
-}
-
 if (!fs.existsSync(bookmarksPath)) {
   console.error(`Bookmarks file not found: ${bookmarksPath}`);
   process.exit(5);
@@ -86,7 +88,7 @@ try {
   process.exit(1);
 }
 
-// --------- Helpers: collect URLs recursively ---------
+// --------- Helpers ---------
 const collectAllUrls = (node, acc) => {
   if (!node || typeof node !== "object") return;
   if (node.type === "url" && typeof node.url === "string") acc.push(node.url);
@@ -102,6 +104,34 @@ const walk = (node, acc) => {
   const children = Array.isArray(node.children) ? node.children : [];
   for (const child of children) walk(child, acc);
 };
+
+const collectFoldersFlat = (node, acc) => {
+  if (!node || typeof node !== "object") return;
+  if (node.type === "folder" && node.name) acc.push(node.name);
+  const children = Array.isArray(node.children) ? node.children : [];
+  for (const child of children) collectFoldersFlat(child, acc);
+};
+
+if (listFoldersMode) {
+  listFolders(bookmarksPath, root);
+  process.exit(0);
+}
+
+if (flatFoldersMode) {
+  let folders = [];
+  if (root && typeof root === "object") {
+    if (root.roots && typeof root.roots === "object") {
+      for (const key of Object.keys(root.roots)) {
+        collectFoldersFlat(root.roots[key], folders);
+      }
+    } else {
+      collectFoldersFlat(root, folders);
+    }
+  }
+  folders = Array.from(new Set(folders)).sort();
+  listFlatFolders(bookmarksPath, folders);
+  process.exit(0);
+}
 
 let urls = [];
 if (root && typeof root === "object") {
