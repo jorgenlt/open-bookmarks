@@ -6,6 +6,7 @@ import path from "path";
 import os from "os";
 import { spawn } from "child_process";
 import showHelpAndExit from "./common/showHelpAndExit.js";
+import listBookmarks from "./common/listBookmarks.js";
 
 // --------- Parse flags & positional args ---------
 const raw = process.argv.slice(2);
@@ -124,12 +125,7 @@ if (uniqueUrls.length === 0) {
 
 // --------- If --list was given, print the URLs and exit ---------
 if (listMode) {
-  console.log(`# Bookmarks found: ${uniqueUrls.length}\n`);
-  console.log(`# Folder: ${folderName}\n`);
-  console.log(`# Bookmarks file: ${bookmarksPath}\n`);
-  for (const u of uniqueUrls) {
-    console.log(u);
-  }
+  listBookmarks(uniqueUrls, folderName, bookmarksPath);
   process.exit(0);
 }
 

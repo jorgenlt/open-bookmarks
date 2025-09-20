@@ -26,6 +26,6 @@ Notes:
   - You may set env vars VIVALDI_BIN, CHROME_BIN, FIREFOX_BIN to override binary names.
 `);
   process.exit(0);
-}
+};
 
 export default showHelpAndExit;
